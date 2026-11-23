@@ -41,7 +41,7 @@ model.fit(train_dataset, nb_epoch=30)
 metrics = [
     dc.metrics.Metric(dc.metrics.rms_score, name="RMSE"),
     dc.metrics.Metric(dc.metrics.mae_score, name="MAE"),
-    dc.metrics.Metric(dc.metrics.r2, name="R2"),
+    dc.metrics.Metric(dc.metrics.r2_score, name="R2"),
 ]
 train_scores = model.evaluate(train_dataset, metrics, transformers)
 test_scores = model.evaluate(test_dataset, metrics, transformers)
@@ -52,8 +52,8 @@ raw = pd.read_csv(csv_path).drop_duplicates(subset="smiles").set_index("smiles")
 
 #keep only molecules in test set in the same order
 test_smiles = list(test_dataset.ids)
-esol_pred = raw.loc[test_smiles, "ESOL predicted log solubility in mols/L"].values
-measured = raw.loc[test_smiles, "measured log soluability in mols/L"].values
+esol_pred = raw.loc[test_smiles, "ESOL predicted log solubility in mols per litre"].values
+measured = raw.loc[test_smiles, "measured log solubility in mols per litre"].values
 
 esol_scores = {
     "RMSE": np.sqrt(mean_squared_error(measured, esol_pred)),
@@ -75,7 +75,7 @@ new_smiles = [
     "CC(=O)OC1=CC=CC=C1C(=O)O",     #aspirin
     "C1=CC=C2C=CC=CC2=C1",          #naphthalene
 ]
-featurizer = dc.feat.CircularFingerprints(size=1024)
+featurizer = dc.feat.CircularFingerprint(size=1024)
 features = featurizer.featurize(new_smiles)
 predictions = model.predict_on_batch(features)
 real_predictions = dc.trans.undo_transforms(predictions, transformers)
